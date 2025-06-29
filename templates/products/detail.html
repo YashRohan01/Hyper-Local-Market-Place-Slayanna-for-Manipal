@@ -1,0 +1,645 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ product.title }} Details{% endblock %}
+{% block extra_head %}
+<style>
+/* Casual Product Details Page Styling */
+/* Typography updates for casual feel */
+body {
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Main container styling */
+.container.product-container {
+  padding: 20px;
+  max-width: 1100px;
+  margin: 40px auto;
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Main product image styling */
+.image-gallery {
+  position: relative;
+  margin-bottom: 25px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.main-image {
+  width: 100%;
+  height: 400px;
+  object-fit: contain;
+  border: none !important;
+  box-shadow: none;
+  transition: transform 0.3s ease;
+  background-color: #f8f9fa;
+}
+
+.main-image:hover {
+  transform: scale(1.03);
+}
+
+/* Image navigation controls */
+.image-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 45px;
+  height: 45px;
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #444;
+  border: none;
+  transition: all 0.2s ease;
+  z-index: 5;
+}
+
+.image-nav:hover {
+  background-color: #fff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.image-nav.prev {
+  left: 15px;
+}
+
+.image-nav.next {
+  right: 15px;
+}
+
+/* Image indicators (dots) */
+.image-indicators {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+  gap: 8px;
+}
+
+.image-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #d8d8d8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.image-dot.active {
+  background-color: #5B87FF;
+  transform: scale(1.3);
+}
+
+/* Thumbnail gallery styling */
+.thumbnails-container {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 10px 0;
+  margin-top: 10px;
+  scrollbar-width: thin;
+}
+
+.thumbnails-container::-webkit-scrollbar {
+  height: 4px;
+}
+
+.thumbnails-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.thumbnails-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.thumbnail-image {
+  height: 80px;
+  width: 80px;
+  object-fit: cover;
+  border: 2px solid transparent;
+  transition: all 0.25s ease;
+  opacity: 0.8;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.thumbnail-image:hover {
+  border-color: #5B87FF;
+  opacity: 1;
+  transform: translateY(-3px);
+}
+
+.thumbnail-image.active {
+  border-color: #5B87FF;
+  opacity: 1;
+}
+
+/* Product info section styling */
+.product-info h2 {
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 2rem;
+  padding-bottom: 12px;
+  border-bottom: 2px dashed #eaeaea;
+}
+
+/* Product meta info */
+.product-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+  color: #666;
+  background-color: #f8f9fa;
+  padding: 6px 12px;
+  border-radius: 30px;
+}
+
+.meta-item i {
+  color: #5B87FF;
+  font-size: 1rem;
+}
+
+.text-success {
+  font-weight: 600;
+  margin: 15px 0;
+}
+
+/* Price styling */
+h4.text-success {
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: #5B87FF !important;
+  margin-top: 20px;
+}
+
+/* Product description */
+.product-info p {
+  line-height: 1.7;
+  font-size: 1.05rem;
+  margin-bottom: 25px;
+  color: #444;
+}
+
+/* Status label styling */
+.status-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-weight: 600;
+  margin: 15px 0;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.status-available {
+  background-color: rgba(80, 200, 120, 0.15);
+  color: #2dc653;
+}
+
+.status-sold {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.status-donated {
+  background-color: rgba(255, 193, 7, 0.15);
+  color: #e5a500;
+}
+
+.status-unknown {
+  background-color: rgba(108, 117, 125, 0.1);
+  color: #6c757d;
+}
+
+/* Button styling */
+.btn-primary, .btn-outline-secondary {
+  padding: 12px 24px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  border-radius: 30px;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  text-transform: none;
+}
+
+.btn-primary {
+  background-color: #5B87FF;
+  border-color: #5B87FF;
+}
+
+.btn-primary:hover {
+  background-color: #4a76f0;
+  border-color: #4a76f0;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(91, 135, 255, 0.3);
+}
+
+.btn-outline-secondary {
+  color: #5B87FF;
+  border-color: #5B87FF;
+  background-color: transparent;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f0f4ff;
+  color: #4a76f0;
+  border-color: #4a76f0;
+  transform: translateY(-3px);
+}
+
+/* Seller information panel */
+.seller-info {
+  margin-top: 25px;
+  padding: 20px;
+  border: none;
+  border-radius: 16px;
+  background-color: #f8f9fa;
+  display: none;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.seller-info.show {
+  display: block;
+  animation: fadeIn 0.4s ease;
+}
+
+.seller-info h5 {
+  color: #444;
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+}
+
+.seller-info hr {
+  border-top: 2px dashed #e6e6e6;
+  margin: 15px 0;
+}
+
+.seller-info-row {
+  display: flex;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.seller-info-label {
+  font-weight: 600;
+  width: 150px;
+  color: #555;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Button group styling */
+.button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* Listing date badge */
+.listing-date {
+  background-color: #f0f4ff;
+  padding: 6px 12px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  color: #5B87FF;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 15px;
+}
+
+/* Star rating */
+.rating-stars {
+  color: #FFB64D;
+  letter-spacing: 2px;
+  font-size: 1.1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .container.product-container {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 15px;
+  }
+
+  .main-image {
+    height: 300px;
+  }
+ 
+  .thumbnail-image {
+    height: 60px;
+    width: 60px;
+  }
+  
+  .button-group {
+    flex-direction: column;
+  }
+  
+  .button-group .btn {
+    width: 100%;
+    margin-bottom: 10px;
+    justify-content: center;
+  }
+  
+  .seller-info-row {
+    flex-direction: column;
+  }
+  
+  .seller-info-label {
+    width: 100%;
+    margin-bottom: 3px;
+  }
+
+  .product-info h2 {
+    font-size: 1.7rem;
+  }
+  
+  h4.text-success {
+    font-size: 1.8rem;
+  }
+}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+{% include 'header.html' %}
+<div class="container product-container">
+    <div class="row">
+        <!-- Main Product Image -->
+        <div class="col-md-6">
+            <!-- Image Gallery with Navigation -->
+            <div class="image-gallery">
+                <img src="{{ product.main_image.url }}"
+                     class="img-fluid main-image"
+                     alt="{{ product.title }}"
+                     id="mainImage">
+                
+                <!-- Navigation Buttons -->
+                <button class="image-nav prev" id="prevImage">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="image-nav next" id="nextImage">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                
+                <!-- Image Indicators (Dots) -->
+                <div class="image-indicators" id="imageIndicators">
+                    <!-- Dots will be generated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Thumbnails Container -->
+            <div class="thumbnails-container" id="thumbnailsContainer">
+                <img src="{{ product.main_image.url }}"
+                     class="thumbnail-image active"
+                     data-index="0"
+                     alt="{{ product.title }} main image"
+                     onclick="changeImage(0)">
+                     
+                {% for image in product.images.all %}
+                    <img src="{{ image.image.url }}"
+                         class="thumbnail-image"
+                         data-index="{{ forloop.counter }}"
+                         alt="Product image {{ forloop.counter }}"
+                         onclick="changeImage({{ forloop.counter }})">
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Product Info -->
+        <div class="col-md-6 product-info">
+            <h2>{{ product.title }}</h2>
+            
+            <!-- Product Meta Information -->
+            <div class="product-meta">
+                <div class="meta-item">
+                    <i class="fas fa-tag"></i>
+                    <span>{% for cat in product.category.all %}
+                      {{ cat.name }}{% if not forloop.last %}, {% endif %}
+                  {% endfor %}</span>
+                </div>
+                
+                <div class="meta-item">
+                    <i class="fas fa-barcode"></i>
+                    <span>ID: {{ product.id|default:"12345" }}</span>
+                </div>
+                
+                <!-- Listing Date -->
+                <div class="listing-date">
+                    <i class="far fa-calendar-alt"></i>
+                    Listed on: {{ product.created_at|date:"d M, Y"|default:"15 Apr, 2025" }}
+                </div>
+            </div>
+            
+            <h4 class="text-success">₹{{ product.price }}</h4>
+            
+            <p>{{ product.description }}</p>
+            
+            <!-- Improved Stock Status Display -->
+            {% if product.status == "available" %}
+            <div class="status-label status-available">
+                <i class="fas fa-check-circle"></i>
+                Available for Sale
+            </div>
+            {% elif product.status == "sold" %}
+            <div class="status-label status-sold">
+                <i class="fas fa-times-circle"></i>
+                Sold
+            </div>
+            {% elif product.status == "donated" %}
+            <div class="status-label status-donated">
+                <i class="fas fa-gift"></i>
+                Donated
+            </div>
+            {% else %}
+            <div class="status-label status-unknown">
+                <i class="fas fa-question-circle"></i>
+                Status Unknown
+            </div>
+            {% endif %}
+
+            
+            <div class="button-group">
+              <form method="GET" action="{% url 'compose_message' product.seller.phone_number product.id %}" class="d-inline">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-comment-dots"></i>
+                    Message Seller
+                </button>
+            </form>
+                <button id="showSellerBtn" class="btn btn-outline-secondary">
+                    <i class="fas fa-user"></i>
+                    <span id="sellerBtnText">About the Seller</span>
+                </button>
+            </div>
+            
+            <!-- Seller Information (Hidden by default) -->
+            <div id="sellerInfo" class="seller-info mt-3">
+                <h5>About the Seller</h5>
+                <hr>
+                
+                <div class="seller-info-row">
+                    <div class="seller-info-label">Name:</div>
+                    <div>{{ product.seller.name|default:"Authorized Retailer" }}</div>
+                </div>
+                
+                <div class="seller-info-row">
+                    <div class="seller-info-label">Listed:</div>
+                    <div>{{ product.created_at|date:"d M, Y - h:i A"|default:"15 Apr, 2025 - 10:30 AM" }}</div>
+                </div>
+                
+                <div class="seller-info-row">
+                    <div class="seller-info-label">Rating:</div>
+                    <div>
+                        <span class="rating-stars">
+                            {% if product.seller.seller_rating %}
+                                {% with product.seller.seller_rating as rating %}
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= rating|floatformat:0 %}
+                                            ★
+                                        {% else %}
+                                            ☆
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </span>
+                            ({{ product.seller.total_reviews|default:"42" }} reviews)
+                        {% else %}
+                            <span class="rating-stars">★★★★☆</span> (42 reviews)
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="seller-info-row">
+                    <div class="seller-info-label">Member since:</div>
+                    <div>{{ product.seller.created_at|date:"F Y"|default:"March 2022" }}</div>
+                </div>
+                
+                
+                <div class="seller-info-row">
+                    <div class="seller-info-label">Location:</div>
+                    <div>{{ product.location|default:"Manipal, India" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Seller information toggle functionality
+        const showSellerBtn = document.getElementById('showSellerBtn');
+        const sellerInfo = document.getElementById('sellerInfo');
+        const sellerBtnText = document.getElementById('sellerBtnText');
+        
+        showSellerBtn.addEventListener('click', function() {
+            sellerInfo.classList.toggle('show');
+            if (sellerInfo.classList.contains('show')) {
+                sellerBtnText.textContent = 'Hide Seller Info';
+            } else {
+                sellerBtnText.textContent = 'About the Seller';
+            }
+        });
+        
+        // Image gallery functionality
+        const mainImage = document.getElementById('mainImage');
+        const prevButton = document.getElementById('prevImage');
+        const nextButton = document.getElementById('nextImage');
+        const thumbnails = document.querySelectorAll('.thumbnail-image');
+        const indicatorsContainer = document.getElementById('imageIndicators');
+        
+        // Create array of all image sources
+        const images = [];
+        thumbnails.forEach(thumb => {
+            images.push({
+                src: thumb.src,
+                alt: thumb.alt
+            });
+        });
+        
+        // Generate dot indicators
+        images.forEach((img, index) => {
+            const dot = document.createElement('div');
+            dot.className = 'image-dot' + (index === 0 ? ' active' : '');
+            dot.onclick = function() { changeImage(index); };
+            indicatorsContainer.appendChild(dot);
+        });
+        
+        let currentIndex = 0;
+        
+        // Function to change the displayed image
+        window.changeImage = function(index) {
+            if (index < 0) index = images.length - 1;
+            if (index >= images.length) index = 0;
+            
+            currentIndex = index;
+            mainImage.src = images[index].src;
+            mainImage.alt = images[index].alt;
+            
+            // Update active thumbnail
+            thumbnails.forEach(thumb => {
+                thumb.classList.remove('active');
+                if (parseInt(thumb.dataset.index) === index) {
+                    thumb.classList.add('active');
+                    
+                    // Scroll thumbnail into view if needed
+                    thumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                }
+            });
+            
+            // Update active dot
+            const dots = document.querySelectorAll('.image-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+        };
+        
+        // Navigation buttons
+        prevButton.addEventListener('click', function() {
+            changeImage(currentIndex - 1);
+        });
+        
+        nextButton.addEventListener('click', function() {
+            changeImage(currentIndex + 1);
+        });
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                changeImage(currentIndex - 1);
+            } else if (e.key === 'ArrowRight') {
+                changeImage(currentIndex + 1);
+            }
+        });
+    });
+</script>
+{% endblock %}

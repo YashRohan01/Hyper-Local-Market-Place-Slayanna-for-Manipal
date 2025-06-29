@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'header.html' %}
+
+<div class="message-container">
+    <div class="message-card">
+        <div class="message-header">
+            <h3>Message to {{ receiver.name }}</h3>
+            <span class="product-tag">Product #{{product.id}}</span>
+        </div>
+        <div class="message-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-fields">
+                    {{ form.as_p }}  <!-- Render form fields here, content field will be displayed -->
+                </div>
+                <div class="button-area">
+                    <button type="submit" class="send-button">
+                        Send →
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .message-container {
+        max-width: 650px;
+        margin: 30px auto;
+        padding: 0 15px;
+    }
+    
+    .message-card {
+        background-color: #fff;
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        border: none;
+    }
+    
+    .message-header {
+        padding: 20px 25px;
+        background: linear-gradient(135deg, #6B8CFF, #6B8CFF);
+        color: white;
+        border-bottom: none;
+    }
+    
+    .message-header h3 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+    
+    .product-tag {
+        display: inline-block;
+        background-color: rgba(255, 255, 255, 0.25);
+        padding: 4px 10px;
+        border-radius: 30px;
+        font-size: 13px;
+        margin-top: 8px;
+    }
+    
+    .message-body {
+        padding: 25px;
+    }
+    
+    .form-fields {
+        margin-bottom: 20px;
+    }
+    
+    /* Make the form elements more casual */
+    .form-fields textarea, 
+    .form-fields input {
+        border-radius: 12px;
+        border: 2px solid #e0e6ff;
+        padding: 12px 15px;
+        font-family: inherit;
+        font-size: 16px;
+        transition: all 0.2s;
+        width: 100%;
+    }
+    
+    .form-fields textarea:focus, 
+    .form-fields input:focus {
+        border-color: #6B8CFF;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(107, 140, 255, 0.15);
+    }
+    
+    .form-fields label {
+        font-weight: 500;
+        color: #555;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .button-area {
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .send-button {
+        background-color: #6B8CFF;
+        color: white;
+        border: none;
+        border-radius: 30px;
+        padding: 12px 28px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .send-button:hover {
+        background-color: #5A7BFF;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(107, 140, 255, 0.25);
+    }
+    
+    /* Style Django form errors nicely */
+    .errorlist {
+        list-style: none;
+        padding: 0;
+        margin: 5px 0 0;
+        color: #e74c3c;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}

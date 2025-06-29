@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'header.html' %}
+<div class="container mt-5">
+    <h2>Donate a Product</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Donate</button>
+    </form>
+</div>
+{% endblock %}

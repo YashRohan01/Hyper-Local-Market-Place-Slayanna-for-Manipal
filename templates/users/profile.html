@@ -1,0 +1,355 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+{% include 'header.html' %}
+
+<div class="container my-5">
+  <!-- Profile Header Section -->
+  <div class="profile-header bg-white rounded-lg shadow-sm p-4 mb-4">
+    <div class="d-md-flex align-items-center">
+      <div class="profile-image me-md-4 mb-3 mb-md-0 text-center text-md-start">
+        {% if request.user.profile_image %}
+          <img src="{{ request.user.profile_image.url }}" class="rounded-circle profile-avatar" alt="{{ request.user.name }}">
+        {% else %}
+          <div class="profile-avatar-placeholder rounded-circle d-flex align-items-center justify-content-center">
+            <i class="fas fa-user"></i>
+          </div>
+        {% endif %}
+      </div>
+      <div class="profile-info">
+        <h2 class="mb-1 fw-bold">Welcome, {{ request.user.name }}</h2>
+        <p class="text-muted mb-2">
+          <i class="fas fa-map-marker-alt me-1"></i> 
+          {% if request.user.location %}{{ request.user.location }}{% else %}No location set{% endif %}
+        </p>
+        <div class="profile-stats d-flex flex-wrap gap-3 mt-2">
+          <div class="stat-item">
+            <span class="stat-value">{{ listed_products|length }}</span>
+            <span class="stat-label">Listings</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ bought_products|length }}</span>
+            <span class="stat-label">Purchases</span>
+          </div>
+        </div>
+      </div>
+      <div class="profile-actions ms-md-auto mt-3 mt-md-0">
+        <a href="{% url 'home' %}" class="btn btn-outline-primary rounded-pill">
+          <i class="fas fa-edit me-1"></i> Edit Profile
+        </a>
+      </div>
+    </div>
+    <!-- Removed the problematic form that was causing the NoReverseMatch error -->
+  </div>
+
+  <!-- Tab Navigation -->
+  <ul class="nav nav-tabs profile-tabs mb-4" id="profileTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="listings-tab" data-bs-toggle="tab" data-bs-target="#listings" type="button" role="tab" aria-controls="listings" aria-selected="true">
+        <i class="fas fa-tag me-1"></i> Your Listings
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="purchases-tab" data-bs-toggle="tab" data-bs-target="#purchases" type="button" role="tab" aria-controls="purchases" aria-selected="false">
+        <i class="fas fa-shopping-bag me-1"></i> Your Donations
+      </button>
+    </li>
+  </ul>
+
+  <!-- Tab Content -->
+  <div class="tab-content" id="profileTabsContent">
+    <!-- Listings Tab -->
+    <div class="tab-pane fade show active" id="listings" role="tabpanel" aria-labelledby="listings-tab">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="section-title mb-0">Your Listings</h3>
+        <a href="{% url 'create' %}" class="btn btn-feature btn-sm">
+          <i class="fas fa-plus me-1"></i> Add New Listing
+        </a>
+      </div>
+      
+      {% if listed_products %}
+        <div class="row g-4">
+          {% for product in listed_products %}
+            <div class="col-md-6 col-lg-4">
+              <div class="card product-card h-100 border-0 shadow-sm">
+                <div class="product-img-wrapper">
+                  <img src="{{ product.main_image.url }}" class="card-img-top" alt="{{ product.title }}">
+                  <div class="product-badge">{{ product.get_status_display }}</div>
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title text-truncate">{{ product.title }}</h5>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <p class="card-text price mb-0">₹{{ product.price }}</p>
+                    <p class="text-muted small mb-0">{{ product.created_at|date:"M d, Y" }}</p>
+                  </div>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                  <div class="d-flex justify-content-between">
+                    <a href="{% url 'product_detail' product.pk %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                    <a href="#" class="btn btn-sm btn-outline-secondary">Edit</a>
+                  </div>
+                  <!-- Status update for product within the product card -->
+                  {% if product %}
+                  <form method="POST" action="{% url 'update_product_status' product.pk %}" class="mt-2">
+                    {% csrf_token %}
+                    <div class="d-flex align-items-center justify-content-between">
+                      <select name="status" class="form-select form-select-sm w-auto">
+                        {% for key, value in product.STATUS_CHOICES %}
+                          <option value="{{ key }}" {% if product.status == key %}selected{% endif %}>{{ value }}</option>
+                        {% endfor %}
+                      </select>
+                      <button type="submit" class="btn btn-sm btn-outline-success ms-2">Update</button>
+                    </div>
+                  </form>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state p-4 text-center">
+          <div class="empty-icon mb-3">
+            <i class="fas fa-box-open fa-3x text-muted"></i>
+          </div>
+          <h4>No Listings Yet</h4>
+          <p class="text-muted">You haven't listed any products for sale.</p>
+          <a href="{% url 'create' %}" class="btn btn-feature mt-2">
+            <i class="fas fa-plus me-1"></i> Create Your First Listing
+          </a>
+        </div>
+      {% endif %}
+    </div>
+    
+    <!-- Purchases Tab -->
+    <div class="tab-pane fade" id="purchases" role="tabpanel" aria-labelledby="purchases-tab">
+      <h3 class="section-title mb-3">Your Purchases</h3>
+      
+      {% if bought_products %}
+        <div class="row g-4">
+          {% for product in bought_products %}
+            <div class="col-md-6 col-lg-4">
+              <div class="card product-card h-100 border-0 shadow-sm">
+                <div class="product-img-wrapper">
+                  <img src="{{ product.main_image.url }}" class="card-img-top" alt="{{ product.title }}">
+                  <div class="product-badge purchased">Purchased</div>
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title text-truncate">{{ product.title }}</h5>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <p class="card-text price mb-0">₹{{ product.price }}</p>
+                    <p class="text-muted small mb-0">{{ product.updated_at|date:"M d, Y" }}</p>
+                  </div>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                  <a href="{% url 'product_detail' product.pk %}" class="btn btn-sm btn-outline-primary w-100">View Details</a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state p-4 text-center">
+          <div class="empty-icon mb-3">
+            <i class="fas fa-shopping-bag fa-3x text-muted"></i>
+          </div>
+          <h4>No Purchases Yet</h4>
+          <p class="text-muted">You haven't bought any products yet.</p>
+          <a href="{% url 'home' %}" class="btn btn-feature mt-2">
+            <i class="fas fa-search me-1"></i> Browse Products
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Custom CSS for Profile Page -->
+<style>
+  /* Profile header styles */
+  .profile-header {
+    border-radius: 12px;
+    transition: all 0.3s ease;
+  }
+  
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border: 3px solid var(--primary-light);
+  }
+  
+  .profile-avatar-placeholder {
+    width: 100px;
+    height: 100px;
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    font-size: 2.5rem;
+  }
+  
+  .profile-stats {
+    margin-top: 0.5rem;
+  }
+  
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: rgba(156, 39, 176, 0.05);
+    border-radius: 8px;
+  }
+  
+  .stat-value {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--primary-color);
+  }
+  
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  
+  /* Tab styling */
+  .profile-tabs {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .profile-tabs .nav-link {
+    color: var(--text-dark);
+    font-weight: 500;
+    padding: 0.75rem 1.25rem;
+    border: none;
+    margin-right: 0.5rem;
+    border-radius: 8px 8px 0 0;
+  }
+  
+  .profile-tabs .nav-link:hover {
+    color: var(--primary-color);
+    background-color: rgba(156, 39, 176, 0.05);
+    border-color: transparent;
+  }
+  
+  .profile-tabs .nav-link.active {
+    color: var(--primary-color);
+    background-color: white;
+    border-bottom: 3px solid var(--primary-color);
+    font-weight: 600;
+  }
+  
+  /* Product card styling */
+  .product-card {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .product-img-wrapper {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+  }
+  
+  .product-img-wrapper img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  
+  .product-card:hover .product-img-wrapper img {
+    transform: scale(1.05);
+  }
+  
+  .product-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .product-badge.purchased {
+    background-color: var(--accent-color);
+  }
+  
+  .price {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+  }
+  
+  .card-title {
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .empty-state {
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    margin-top: 1rem;
+  }
+  
+  .empty-icon {
+    color: #ccc;
+  }
+  
+  /* Section title styling */
+  .section-title {
+    position: relative;
+    font-weight: 600;
+    color: var(--text-dark);
+    padding-bottom: 0.5rem;
+  }
+  
+  .section-title:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 50px;
+    background-color: var(--primary-color);
+    border-radius: 2px;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 767px) {
+    .profile-avatar, .profile-avatar-placeholder {
+      width: 80px;
+      height: 80px;
+    }
+    
+    .stat-item {
+      padding: 0.4rem 0.8rem;
+    }
+  }
+</style>
+
+<!-- Bootstrap Tab Initialization Script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap tabs
+    var triggerTabList = [].slice.call(document.querySelectorAll('#profileTabs button'))
+    triggerTabList.forEach(function(triggerEl) {
+      var tabTrigger = new bootstrap.Tab(triggerEl)
+      
+      triggerEl.addEventListener('click', function(event) {
+        event.preventDefault()
+        tabTrigger.show()
+      })
+    })
+  });
+</script>
+{% endblock %}

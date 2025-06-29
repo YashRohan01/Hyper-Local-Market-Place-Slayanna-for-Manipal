@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'header.html' %}
+
+<div class="container mt-4">
+    <h3>Chat with {{ receiver.name }} about {{ product.title }}</h3>
+
+    <div class="border p-3 mb-4" style="max-height: 400px; overflow-y: scroll;">
+        {% for message in messages %}
+            <div class="mb-2 {% if message.sender == current_user %}text-end{% endif %}">
+                {% if message.reply_to %}
+                    <blockquote class="blockquote">
+                        <small>Replying to: "{{ message.reply_to.content }}"</small>
+                    </blockquote>
+                {% endif %}
+                <p>
+                    <strong>{{ message.sender.name }}</strong>: {{ message.content }}<br>
+                    <small class="text-muted">{{ message.timestamp|date:"M d, Y H:i" }}</small>
+                </p>
+                {% if message.sender != current_user %}
+                    <form method="POST" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="content" value="">
+                        <input type="hidden" name="reply_to_id" value="{{ message.id }}">
+                        <button type="button" class="btn btn-sm btn-link" onclick="quoteMessage({{ message.id }}, '{{ message.content|escapejs }}')">Reply</button>
+                    </form>
+                {% endif %}
+                <hr>
+            </div>
+        {% endfor %}
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="hidden" name="reply_to_id" id="reply_to_id" value="">
+        <button type="submit" class="btn btn-success">Send</button>
+    </form>
+</div>
+
+<script>
+function quoteMessage(id, content) {
+    document.getElementById('reply_to_id').value = id;
+    const textArea = document.querySelector('textarea');
+    if (textArea.value === "") {
+        textArea.value = "Re: " + content + "\n";
+    }
+    textArea.focus();
+}
+</script>
+
+{% endblock %}
